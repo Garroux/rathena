@@ -3,6 +3,7 @@
 
 #ifndef CONFIG_CUSTOM_DEFINES_POST_HPP
 #define CONFIG_CUSTOM_DEFINES_POST_HPP
+#define PACKETVER 20250716
 
 /**
  * rAthena configuration file (http://rathena.org)
