@@ -178,10 +178,13 @@ Body:
     # Can do everything Players can
     Inherit:
       Player: true
+      Super Player: true
     Level: 0
     Commands:
       rates: true
       who: true
+      warp: true
+      storage: true
   - Id: 10
     Name: Law Enforcement
     Inherit:
