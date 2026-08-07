@@ -1,0 +1,17 @@
+// Custom Prontera Center Kafra
+//============================================================
+prontera,159,187,4	script	Kafra Employee::kaf_custom_prt	4_F_KAFRA1,{
+	cutin "kafra_01",2;
+	callfunc "F_KafSet";
+	mes "[Kafra Employee]";
+	mes "Welcome to the";
+	mes "Kafra Corporation~";
+	mes "The Kafra Services are";
+	mes "always here to support";
+	mes "you. So how can I be";
+	mes "of service today?";
+	callfunc "F_Kafra",5,0,0,40,800;
+	savepoint "prontera",156,191,1,1;
+	callfunc "F_KafEnd",0,1,"in the city of Prontera";
+	end;
+}
