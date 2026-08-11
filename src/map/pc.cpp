@@ -5988,6 +5988,119 @@ int16 pc_search_inventory( const map_session_data* sd, t_itemid nameid) {
  *   6 = ?
  *   7 = stack limitation
  */
+
+// =============================================
+// Resolve Random Option Group by Equipment Type - by Hyllok
+// You can change the group id returned by this function to apply different random options to the same item type, or return 0 to not apply any random option to that item type.
+// =============================================
+static int pc_resolve_random_group(struct item_data* id)
+{
+	if (!id)
+		return 0;
+
+	// =========================
+	// WEAPONS
+	// =========================
+	if (id->type == IT_WEAPON) {
+		switch (id->subtype) {
+
+		case W_DAGGER:
+			return 7;
+
+		case W_1HSWORD:
+		case W_2HSWORD:
+		case W_1HSPEAR:
+		case W_2HSPEAR:
+		case W_1HAXE:
+		case W_2HAXE:
+		case W_MACE:
+		case W_2HMACE:
+		case W_KNUCKLE:
+			return 8;
+
+		case W_STAFF:
+		case W_2HSTAFF:
+			return 9;
+
+		case W_BOW:
+			return 10;
+
+		case W_REVOLVER:
+		case W_RIFLE:
+		case W_GATLING:
+		case W_SHOTGUN:
+		case W_GRENADE:
+			return 11;
+
+		case W_HUUMA:
+			return 12;
+
+		case W_MUSICAL:
+		case W_WHIP:
+			return 13;
+
+		case W_BOOK:
+			return 14;
+
+		case W_KATAR:
+			return 15;
+		}
+	}
+
+	// =========================
+	// ARMORS
+	// =========================
+	if (id->type == IT_ARMOR) {
+
+		if (id->equip & (EQP_HEAD_TOP | EQP_HEAD_MID | EQP_HEAD_LOW))
+			return 1;
+
+		if (id->equip & EQP_ARMOR)
+			return 2;
+
+		if (id->equip & EQP_SHIELD)
+			return 3;
+
+		if (id->equip & EQP_SHOES)
+			return 4;
+
+		if (id->equip & EQP_GARMENT)
+			return 5;
+
+		if (id->equip & (EQP_ACC_L | EQP_ACC_R))
+			return 6;
+	}
+
+	return 0;
+}
+
+// =============================================
+// Apply Random Option Automatically to an item when added to inventory, if it has a random option group defined and doesn't have any random option yet. 
+// =============================================
+static void pc_apply_random_option(struct item_data* id, struct item& it)
+{
+	// Don't apply on stackable items
+	if (itemdb_isstackable2(id))
+		return;
+
+	// Don't apply if the item already has a random option
+	for (int i = 0; i < MAX_ITEM_RDM_OPT; i++) {
+		if (it.option[i].id != 0)
+			return;
+	}
+
+	int group_id = pc_resolve_random_group(id);
+	if (group_id <= 0) // No random option group for this item type
+		return;
+
+	std::shared_ptr<s_random_opt_group> group =
+		random_option_group.find(group_id);
+
+	if (group != nullptr) {
+		group->apply(it);
+	}
+}
+
 enum e_additem_result pc_additem(map_session_data *sd,struct item *item,int32 amount,e_log_pick_type log_type, bool favorite) {
 	struct item_data *id;
 	int16 i;
@@ -6047,6 +6160,7 @@ enum e_additem_result pc_additem(map_session_data *sd,struct item *item,int32 am
 		}
 
 		memcpy(&sd->inventory.u.items_inventory[i], item, sizeof(sd->inventory.u.items_inventory[0]));
+		pc_apply_random_option(id, sd->inventory.u.items_inventory[i]); // Apply random option if possible
 		// clear equip and equip switch fields first, just in case
 		if( item->equip )
 			sd->inventory.u.items_inventory[i].equip = 0;
